@@ -1,0 +1,10 @@
+[Unit]
+After=local-fs.target network.target
+
+[Service]
+Type=simple
+ExecStart=/var/www/go-http-server
+Restart=on-failure
+
+[Install]
+WantedBy=default.target

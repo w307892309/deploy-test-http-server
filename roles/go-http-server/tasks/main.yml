@@ -1,0 +1,42 @@
+- name: get go-http-server.zip
+  maven_artifact:
+    group_id: bin
+    version: '1'
+    artifact_id: go-http-server
+    extension: zip
+    repository_url: 'http://nexus.shakhmin.ru:8081/repository/zip/'
+    username: "{{ nexus_user }}"
+    password: "{{ nexus_password }}"
+    dest: /var/www/go-http-server.zip
+    mode: 0644
+
+- name: unzip go-http-server
+  unarchive:
+    src: /var/www/go-http-server.zip
+    dest: /var/www/
+    mode: 0755
+
+- name: delete zip-file
+  file:
+    state: absent
+    path: /var/www/go-http-server.zip
+
+- name: copy go-http-server.service
+  template:
+    src: go-http-server.service.j2
+    dest: /etc/systemd/system/go-http-server.service
+    mode: 0644
+
+- name: enable and start go-http-server
+  systemd:
+    name: go-http-server
+    state: restarted
+    enabled: yes
+
+- name: nginx conf
+  template:
+    dest: "/etc/nginx/conf.d/{{ inventory_hostname }}.conf"
+    src: virtualhost.conf.j2
+    mode: 0644
+  notify:
+  - Nginx reload
